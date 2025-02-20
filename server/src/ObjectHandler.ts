@@ -2,7 +2,7 @@ import { Database } from "sqlite";
 import { Response, Request } from "express";
 import { User } from "./Models/User";
 import { CourseProject } from "./Models/CourseProject";
-import { CourseSchedule, DeliveryDate } from "./Models/CourseSchedule";
+import { CourseSchedule, SubmissionDate } from "./Models/CourseSchedule";
 import { Course } from "./Models/Course";
 import assert from "assert";
 
@@ -114,20 +114,20 @@ export class ObjectHandler {
         interface DeliveryRow {
             id: number;
             scheduleId: number;
-            deliveryDate: number;
+            submissionDate: number;
         }
 
         const scheduleRow: ScheduleRow | undefined = await db.get('SELECT * FROM schedules WHERE id = ?', [id]);
         if (!scheduleRow) {
             return null;
         }
-        const dates: DeliveryRow[] = await db.all('SELECT * FROM deliveries WHERE scheduleId = ? ORDER BY deliveryDate ASC', [id]);
+        const dates: DeliveryRow[] = await db.all('SELECT * FROM deliveries WHERE scheduleId = ? ORDER BY submissionDate ASC', [id]);
 
         return new CourseSchedule(
             id,
             new Date(scheduleRow.startDate * 1000),
             new Date(scheduleRow.endDate * 1000),
-            dates.map(date => new DeliveryDate(date.id, new Date(date.deliveryDate * 1000)))
+            dates.map(date => new SubmissionDate(date.id, new Date(date.submissionDate * 1000)))
         );
     }
 
@@ -143,11 +143,11 @@ export class ObjectHandler {
             throw new Error("Failed to persist CourseSchedule");
         }
 
-        for (const deliveryDate of schedule.getDeliveryDates()) {
-            if (deliveryDate.getId()) {
-                await updateDeliveryDate(deliveryDate, db);
+        for (const submissionDate of schedule.getSubmissionDates()) {
+            if (submissionDate.getId()) {
+                await updateSubmissionDate(submissionDate, db);
             } else {
-                await insertDeliveryDate(deliveryDate, scheduleId, db);
+                await insertSubmissionDate(submissionDate, scheduleId, db);
             }
         }
     }
@@ -164,28 +164,28 @@ export class ObjectHandler {
 }
 
 
-async function updateDeliveryDate(deliveryDate: DeliveryDate, db: Database): Promise<void> {
-    assert(deliveryDate.getId())
+async function updateSubmissionDate(submissionDate: SubmissionDate, db: Database): Promise<void> {
+    assert(submissionDate.getId())
 
     await db.run(
-        'UPDATE deliveries SET deliveryDate = ? WHERE id = ?',
-        [deliveryDate.getDeliveryDate().getTime() / 1000, deliveryDate.getId()]
+        'UPDATE deliveries SET submissionDate = ? WHERE id = ?',
+        [submissionDate.getSubmissionDate().getTime() / 1000, submissionDate.getId()]
     )
 }
 
-async function insertDeliveryDate(deliveryDate: DeliveryDate, scheduleId: number, db: Database): Promise<void> {
-    assert(!deliveryDate.getId())
+async function insertSubmissionDate(submissionDate: SubmissionDate, scheduleId: number, db: Database): Promise<void> {
+    assert(!submissionDate.getId())
 
     const rowId = await db.run(
-        'INSERT INTO deliveries (scheduleId, deliveryDate) VALUES (?, ?)',
-        [scheduleId, deliveryDate.getDeliveryDate().getTime() / 1000]
+        'INSERT INTO deliveries (scheduleId, submissionDate) VALUES (?, ?)',
+        [scheduleId, submissionDate.getSubmissionDate().getTime() / 1000]
     ).then((res) => res.lastID);
 
     if (rowId == null) {
-        throw new Error("Failed to persist DeliveryDate");
+        throw new Error("Failed to persist SubmissionDate");
     }
 
-    deliveryDate.setId(rowId);
+    submissionDate.setId(rowId);
 }
 
 async function updateSchedule(schedule: CourseSchedule, db: Database): Promise<void> {

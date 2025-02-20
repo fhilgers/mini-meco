@@ -1,9 +1,9 @@
 import { Visitor } from "./Visitor";
 
-export class DeliveryDate extends Visitor {
+export class SubmissionDate extends Visitor {
   constructor(
     protected id?: number,
-    protected deliveryDate: Date = new Date(),
+    protected submissionDate: Date = new Date(),
 
   ) {
     super();
@@ -13,16 +13,16 @@ export class DeliveryDate extends Visitor {
     return this.id;
   }
 
-  public getDeliveryDate(): Date {
-    return this.deliveryDate;
+  public getSubmissionDate(): Date {
+    return this.submissionDate;
   }
 
   public setId(id: number) {
     this.id = id;
   }
 
-  public setDeliveryDate(deliveryDate: Date) {
-    this.deliveryDate = deliveryDate;
+  public setSubmissionDate(submissionDate: Date) {
+    this.submissionDate = submissionDate;
   }
 }
 
@@ -32,7 +32,7 @@ export class CourseSchedule extends Visitor {
     protected id?: number,
     protected startDate: Date = new Date(),
     protected endDate: Date = new Date(),
-    protected deliveryDates: DeliveryDate[] = [],
+    protected submissionDates: SubmissionDate[] = [],
   ) {
     super();
   }
@@ -49,8 +49,8 @@ export class CourseSchedule extends Visitor {
     return this.endDate;
   }
 
-  public getDeliveryDates(): DeliveryDate[] {
-    return this.deliveryDates;
+  public getSubmissionDates(): SubmissionDate[] {
+    return this.submissionDates;
   }
 
   public setId(id: number) {
@@ -65,8 +65,8 @@ export class CourseSchedule extends Visitor {
     this.endDate = endDate;
   }
 
-  public setDeliveryDates(deliveryDates: DeliveryDate[]) {
-    this.deliveryDates = deliveryDates;
+  public setSubmissionDates(submissionDates: SubmissionDate[]) {
+    this.submissionDates = submissionDates;
   }
 
 }

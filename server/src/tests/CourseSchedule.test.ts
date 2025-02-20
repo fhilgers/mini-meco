@@ -3,7 +3,7 @@ import { open } from "sqlite";
 import { describe, it, expect } from "vitest";
 import { ObjectHandler } from "../ObjectHandler";
 import { initializeCourseSchedule } from "../databaseInitializer";
-import { CourseSchedule, DeliveryDate } from "../Models/CourseSchedule";
+import { CourseSchedule, SubmissionDate } from "../Models/CourseSchedule";
 
 async function openInMem() {
     const db = await open({
@@ -31,7 +31,7 @@ describe("CourseSchedule", () => {
             new Date(2022, 0, 1),
             new Date(2022, 1, 1),
             [
-                new DeliveryDate(undefined, new Date(2022, 0, 1))
+                new SubmissionDate(undefined, new Date(2022, 0, 1))
             ]
         );
         await oh.saveCourseSchedule(expected, db);
@@ -46,11 +46,11 @@ describe("CourseSchedule", () => {
             new Date(2022, 0, 1),
             new Date(2022, 1, 1),
             [
-                new DeliveryDate(undefined, new Date(2022, 0, 1)),
-                new DeliveryDate(undefined, new Date(2022, 0, 1))
+                new SubmissionDate(undefined, new Date(2022, 0, 1)),
+                new SubmissionDate(undefined, new Date(2022, 0, 1))
             ]
         );
-        expect(oh.saveCourseSchedule(expected, db)).rejects.toThrow();
+        await expect(oh.saveCourseSchedule(expected, db)).rejects.toThrow();
     });
     
     it("should not allow deliveries before schedule", async () => {
@@ -60,10 +60,10 @@ describe("CourseSchedule", () => {
             new Date(2022, 0, 2),
             new Date(2022, 0, 3),
             [
-                new DeliveryDate(undefined, new Date(2022, 0, 1)),
+                new SubmissionDate(undefined, new Date(2022, 0, 1)),
             ]
         );
-        expect(oh.saveCourseSchedule(expected, db)).rejects.toThrow();
+        await expect(oh.saveCourseSchedule(expected, db)).rejects.toThrow();
     });
 
     it("should not allow deliveries after schedule", async () => {
@@ -73,10 +73,10 @@ describe("CourseSchedule", () => {
             new Date(2022, 0, 1),
             new Date(2022, 0, 2),
             [
-                new DeliveryDate(undefined, new Date(2022, 0, 3)),
+                new SubmissionDate(undefined, new Date(2022, 0, 3)),
             ]
         );
-        expect(oh.saveCourseSchedule(expected, db)).rejects.toThrow();
+        await expect(oh.saveCourseSchedule(expected, db)).rejects.toThrow();
     });
     
     it("should allow updating schedules", async () => {
@@ -86,7 +86,7 @@ describe("CourseSchedule", () => {
             new Date(2022, 0, 1),
             new Date(2022, 1, 1),
             [
-                new DeliveryDate(undefined, new Date(2022, 0, 1))
+                new SubmissionDate(undefined, new Date(2022, 0, 1))
             ]
         );
         
@@ -95,7 +95,7 @@ describe("CourseSchedule", () => {
         if (!expected) { throw new Error("expected not null"); }
         expect(expected).toEqual(scheduleBefore);
         expected.setEndDate(new Date(2022, 2, 1));
-        expected.getDeliveryDates()[0].setDeliveryDate(new Date(2022, 2, 1));
+        expected.getSubmissionDates()[0].setSubmissionDate(new Date(2022, 2, 1));
         await oh.saveCourseSchedule(expected, db);
         
         // still id 1
@@ -109,14 +109,14 @@ describe("CourseSchedule", () => {
             new Date(2022, 0, 1),
             new Date(2022, 1, 1),
             [
-                new DeliveryDate(undefined, new Date(2022, 0, 3)),
-                new DeliveryDate(undefined, new Date(2022, 0, 2)),
-                new DeliveryDate(undefined, new Date(2022, 0, 1)),
+                new SubmissionDate(undefined, new Date(2022, 0, 3)),
+                new SubmissionDate(undefined, new Date(2022, 0, 2)),
+                new SubmissionDate(undefined, new Date(2022, 0, 1)),
             ]
         );
         await oh.saveCourseSchedule(schedule, db);
         // sorted manually after insertion
-        schedule.getDeliveryDates().sort((a, b) => a.getDeliveryDate().getTime() - b.getDeliveryDate().getTime());
+        schedule.getSubmissionDates().sort((a, b) => a.getSubmissionDate().getTime() - b.getSubmissionDate().getTime());
         expect(await oh.getCourseSchedule(1, db)).toEqual(schedule);
     });
 });

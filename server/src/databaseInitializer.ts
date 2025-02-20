@@ -104,9 +104,9 @@ export async function initializeCourseSchedule(db: Database) {
     CREATE TABLE IF NOT EXISTS deliveries (
       id INTEGER PRIMARY KEY,
       scheduleId INTEGER,
-      deliveryDate INTEGER,
+      submissionDate INTEGER,
       FOREIGN KEY (scheduleId) REFERENCES schedules(id) ON DELETE CASCADE,
-      UNIQUE (scheduleId, deliveryDate)
+      UNIQUE (scheduleId, submissionDate)
     )`);
 
   await db.exec(`
@@ -114,9 +114,9 @@ export async function initializeCourseSchedule(db: Database) {
     BEFORE INSERT ON deliveries
     FOR EACH ROW
     BEGIN
-      SELECT RAISE(ABORT, 'deliveryDate must be between startDate and endDate')
-      WHERE NEW.deliveryDate < (SELECT startDate FROM schedules WHERE id = NEW.scheduleId)
-        OR NEW.deliveryDate > (SELECT endDate FROM schedules WHERE id = NEW.scheduleId);
+      SELECT RAISE(ABORT, 'submissionDate must be between startDate and endDate')
+      WHERE NEW.submissionDate < (SELECT startDate FROM schedules WHERE id = NEW.scheduleId)
+        OR NEW.submissionDate > (SELECT endDate FROM schedules WHERE id = NEW.scheduleId);
     END;
     `);
 
@@ -125,9 +125,9 @@ export async function initializeCourseSchedule(db: Database) {
     BEFORE UPDATE ON deliveries
     FOR EACH ROW
     BEGIN
-      SELECT RAISE(ABORT, 'deliveryDate must be between startDate and endDate')
-      WHERE NEW.deliveryDate < (SELECT startDate FROM schedules WHERE id = NEW.scheduleId)
-        OR NEW.deliveryDate > (SELECT endDate FROM schedules WHERE id = NEW.scheduleId);
+      SELECT RAISE(ABORT, 'submissionDate must be between startDate and endDate')
+      WHERE NEW.submissionDate < (SELECT startDate FROM schedules WHERE id = NEW.scheduleId)
+        OR NEW.submissionDate > (SELECT endDate FROM schedules WHERE id = NEW.scheduleId);
     END;
     `);
 }
